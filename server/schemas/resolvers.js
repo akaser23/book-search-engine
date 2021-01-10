@@ -1,25 +1,27 @@
-const { Book, User } = require('../models');
+const { User } = require('../models');
 const { signToken } = require('../utils/auth');
+const { AuthenticationError } = require('apollo-server-express');
 
 const resolvers = {
     Query: {
-        users: async (parent, { username }) => {
-            return User.findOne({ username })
-                .select('-__v -password')
-                .populate('savedBooks')
+        getUsers: async (parent, { username }) => {
+            if (context.user) {
+                const profile = await User.findOne({ _id: context.user._id })
+                    .select('-__v -password')
+                    .populate('savedBooks')
+                return profile;
+            }
+            throw new AuthenticationError('Not logged in')
         }
     },
-    Mutations: {
+    Mutation: {
         addUser: async (parent, args) => {
-            const user = await User.create(body);
-
-            if (!user) {
-                return res.status(400).json({ message: 'Something is wrong!' });
-            }
+            const user = await User.create(args);
             const token = signToken(user);
             res.json({ token, user });
         },
-        saveBook: async (parent, { user, body }) => {
+
+        saveBook: async (parent, args, context) => {
             console.log(user);
             try {
                 const updatedUser = await User.findOneAndUpdate(
@@ -33,6 +35,7 @@ const resolvers = {
                 return res.status(400).json(err);
             }
         },
+
         removeBook: async (parent, { user, params }) => {
             const updatedUser = await User.findOneAndUpdate(
                 { _id: user._id },
@@ -40,20 +43,21 @@ const resolvers = {
                 { new: true }
             );
             if (!updatedUser) {
-                return res.status(404).json({ message: "Couldn't find user with this id!" });
+                throw AuthenticationError("Couldn't find user with this id!");
             }
             return res.json(updatedUser);
         },
+
         login: async (parent, { email, password }) => {
-            const user = await User.findOne({ $or: [{ username: body.username }, { email: body.email }] });
+            const user = await User.findOne({ email });
             if (!user) {
-                return res.status(400).json({ message: "Can't find this user" });
+                throw new AuthenticationError('Incorrect Username');
             }
 
-            const correctPw = await user.isCorrectPassword(body.password);
+            const correctPw = await user.isCorrectPassword(password);
 
             if (!correctPw) {
-                return res.status(400).json({ message: 'Wrong password!' });
+                throw new AuthenticationError("Incorrect Password");
             }
             const token = signToken(user);
             res.json({ token, user });

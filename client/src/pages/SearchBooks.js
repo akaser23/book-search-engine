@@ -77,7 +77,7 @@ const SearchBooks = () => {
       // if book successfully saves to user's account, save book id to state
       setSavedBookIds([...savedBookIds, bookToSave.bookId]);
     } catch (e) {
-      console.error(err);
+      console.error(e);
     }
   };
 
@@ -135,6 +135,7 @@ const SearchBooks = () => {
                         : 'Save this Book!'}
                     </Button>
                   )}
+                  {error && <div>Save Book failed</div>}
                 </Card.Body>
               </Card>
             );
