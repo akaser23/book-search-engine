@@ -9,7 +9,8 @@ import { GET_ME } from '../utils/queries'
 
 const SavedBooks = () => {
 
-  const { queryLoading, queryError, queryData } = useQuery(GET_ME);
+  const { queryLoading, queryData } = useQuery(GET_ME);
+  
   const [removeBook, { error }] = useMutation(REMOVE_BOOK);
 
   console.log(queryData);
@@ -25,10 +26,13 @@ const SavedBooks = () => {
     }
 
     try {
-      const { bookId } = await removeBook();
-      // if (!response.ok) {
-      //   throw new Error('something went wrong!');
-      // }
+      const { queryData } = await removeBook({
+        variables: { bookId: bookId }
+      });
+      console.log(queryData);
+      if (error) {
+        throw new Error('something went wrong!');
+      }
 
       // const updatedUser = await response.json();
       // setQueryData(updatedUser);
@@ -69,8 +73,8 @@ const SavedBooks = () => {
                   <Button className='btn-block btn-danger' onClick={() => handleDeleteBook(book.bookId)}>
                     Delete this Book!
                   </Button>
-                  {queryError && <div>view saved books failed</div>}
-                  {error && <div>delete failed</div>}
+                  {/* {queryError && <div>view saved books failed</div>} */}
+                  {/* {error && <div>delete failed</div>} */}
                 </Card.Body>
               </Card>
             );
