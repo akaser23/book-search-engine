@@ -34,6 +34,10 @@ const LoginForm = () => {
         variables: { ...userFormData }
       });
 
+      if (error) {
+        throw new Error('something went wrong!');
+      }
+
       // const { token, user } = await response.json();
       // console.log(user);
       Auth.login(data.login.token);
@@ -86,7 +90,7 @@ const LoginForm = () => {
           variant='success'>
           Submit
         </Button>
-        {error && <div>Login failed</div>}
+        {/* {error && <div>Login failed</div>} */}
       </Form>
     </>
   );

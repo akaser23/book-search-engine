@@ -9,11 +9,13 @@ import { GET_ME } from '../utils/queries'
 
 const SavedBooks = () => {
 
-  const { queryLoading, queryData } = useQuery(GET_ME);
+  const { loading, data } = useQuery(GET_ME);
+
+  const userData = data?.me || {};
   
   const [removeBook, { error }] = useMutation(REMOVE_BOOK);
 
-  console.log(queryData);
+  // console.log(queryData);
 
   // const [ setQueryData] = useState({});
 
@@ -26,10 +28,11 @@ const SavedBooks = () => {
     }
 
     try {
-      const { queryData } = await removeBook({
+      const { data } = await removeBook({
         variables: { bookId: bookId }
       });
-      console.log(queryData);
+      console.log(data);
+
       if (error) {
         throw new Error('something went wrong!');
       }
@@ -44,7 +47,7 @@ const SavedBooks = () => {
   };
 
   // if data isn't here yet, say so
-  if (queryLoading) {
+  if (loading) {
     return <h2>LOADING...</h2>;
   }
 
@@ -57,12 +60,12 @@ const SavedBooks = () => {
       </Jumbotron>
       <Container>
         <h2>
-          {queryData.savedBooks.length
-            ? `Viewing ${queryData.savedBooks.length} saved ${queryData.savedBooks.length === 1 ? 'book' : 'books'}:`
+          {userData.savedBooks.length
+            ? `Viewing ${userData.savedBooks.length} saved ${userData.savedBooks.length === 1 ? 'book' : 'books'}:`
             : 'You have no saved books!'}
         </h2>
         <CardColumns>
-          {queryData.savedBooks.map((book) => {
+          {userData.savedBooks.map((book) => {
             return (
               <Card key={book.bookId} border='dark'>
                 {book.image ? <Card.Img src={book.image} alt={`The cover for ${book.title}`} variant='top' /> : null}
@@ -73,8 +76,6 @@ const SavedBooks = () => {
                   <Button className='btn-block btn-danger' onClick={() => handleDeleteBook(book.bookId)}>
                     Delete this Book!
                   </Button>
-                  {/* {queryError && <div>view saved books failed</div>} */}
-                  {/* {error && <div>delete failed</div>} */}
                 </Card.Body>
               </Card>
             );
